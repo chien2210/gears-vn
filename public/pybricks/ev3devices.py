@@ -213,7 +213,7 @@ class GyroSensor:
     time.sleep(SENSOR_DELAY)
     return self.sensor.yawAngleAndRate(self.float)[1]
 
-  def angle(self):
+  def angle(self): # Pybricks EV3 angle is an integer!
     time.sleep(SENSOR_DELAY)
     return self.sensor.yawAngleAndRate(self.float)[0] - self.zeroAngle
 
