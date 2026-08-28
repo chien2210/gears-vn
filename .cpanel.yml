@@ -1,0 +1,4 @@
+---
+deployment:
+  tasks:
+    - /bin/cp -R public/. /home/bypweylo/public_html/toantin/gears/
