@@ -136,22 +136,29 @@ nav {
     }
   }
 
-  .layoutMode {
-    position: relative;
+  .splitToggle {
     margin-left: 0.75em;
     padding: 0.3em 0.5em;
     border: solid 1px #bbbbbb;
     border-radius: 0.4em;
+    background: #D9E3F1;
+    font: inherit;
     color: gray;
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
   }
 
-  .layoutMode:hover, .layoutMode:focus {
+  .splitToggle:hover, .splitToggle:focus {
     color: #4994FB;
     background: white;
     outline: none;
+  }
+
+  .splitToggle.active {
+    border-color: #4994FB;
+    background: #4994FB;
+    color: white;
   }
 }
 
