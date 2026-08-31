@@ -209,6 +209,7 @@ var babylon = new function() {
 
     if (
       typeof main == 'undefined'
+      || (main.$panelsContainer && main.$panelsContainer.hasClass('split-layout'))
       || main.$navs.siblings('.active').attr('id') == 'navSim'
       || main.$navs.siblings('.active').attr('id') == 'navArena'
     ) {
@@ -475,4 +476,3 @@ window.addEventListener("DOMContentLoaded", function() {
 // window.addEventListener("DOMContentLoaded", function() {
 //   Ammo().then(babylon.init);
 // });
-
