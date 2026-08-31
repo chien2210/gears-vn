@@ -101,25 +101,15 @@ nav {
       display: none; }
   nav .panelControlsArea .panelControls.active {
     display: block; }
-  nav .splitToggle {
-    margin-left: 0.75em;
-    padding: 0.3em 0.5em;
-    border: solid 1px #bbbbbb;
-    border-radius: 0.4em;
-    background: #D9E3F1;
+  nav .menuBar .splitToggle {
+    border: 0;
+    background: transparent;
     font: inherit;
-    color: gray;
-    cursor: pointer;
-    user-select: none;
-    white-space: nowrap; }
-  nav .splitToggle:hover, nav .splitToggle:focus {
+    appearance: none; }
+  nav .menuBar .splitToggle.active {
     color: #4994FB;
     background: white;
-    outline: none; }
-  nav .splitToggle.active {
-    border-color: #4994FB;
-    background: #4994FB;
-    color: white; }
+    box-shadow: inset 0 -2px 0 #4994FB; }
 
 .panels {
   flex-grow: 1;
