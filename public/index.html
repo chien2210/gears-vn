@@ -10,7 +10,7 @@
   <link rel="icon" href="favicon-167.png" sizes="167x167">
   <link rel="icon" href="favicon-192.png" sizes="192x192">
 
-  <link rel="stylesheet" href="css/main.css?v=9584d2b6">
+  <link rel="stylesheet" href="css/main.css?v=split-layout-1">
   <link rel="stylesheet" href="css/widgets.css?v=7d85fcde">
 
   <script src="jquery/jquery-3.5.1.slim.min.js"></script>
@@ -54,6 +54,9 @@
         </li>
         <li id="navSim">Simulator</li>
       </ul>
+      <div id="layoutMode" class="layoutMode" role="button" tabindex="0" aria-haspopup="true" aria-label="Layout mode">
+        <span class="layoutModeLabel">Tabs</span> &#x25BE;
+      </div>
       <div class="menuBar">
         <div class="menuItem fileMenu">File</div>
         <div class="menuItem pythonMenu">Python</div>
@@ -81,6 +84,8 @@
         <div id="blocklyHiddenDiv" style="height: 100%; width: 100%; position: absolute; top: -10000px;"></div>
         <div id="blocklyPages"><span class="currentPage">Main</span></div>
       </div>
+
+      <div id="splitter" class="splitter" role="separator" aria-orientation="vertical" aria-label="Resize Blocks and Simulator panels" tabindex="0"></div>
 
       <div class="panel" aria-labelledby="navPython">
         <div class="python">
@@ -220,13 +225,13 @@
     robot.player = 'single';
     robots.push(robot);
   </script>
-  <script src="js/babylon.js?v=6061094f"></script>
+  <script src="js/babylon.js?v=split-layout-1"></script>
   <script src="js/blocklyPanel.js?v=8ee6b939"></script>
   <script src="js/gearsbot_completer.js"></script>
   <script src="js/pythonPanel.js?v=3e0c224d"></script>
   <script src="js/filesManager.js?v=c95715e3"></script>
   <script src="js/simPanel.js?v=159f4157"></script>
-  <script src="js/main.js?v=104a42b5"></script>
+  <script src="js/main.js?v=split-layout-1"></script>
 
   <script>
     // Init classes
