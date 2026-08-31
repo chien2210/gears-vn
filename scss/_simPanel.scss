@@ -1,3 +1,12 @@
+#simPanel {
+  // Keep the WebGL canvas in its own stack so it cannot intercept control clicks.
+  isolation: isolate;
+}
+
+#simPanel > :not(#renderCanvas) {
+  z-index: 1;
+}
+
 #renderCanvas {
   width: 100%;
   height: 100%;
