@@ -135,6 +135,24 @@ nav {
       display: block;
     }
   }
+
+  .layoutMode {
+    position: relative;
+    margin-left: 0.75em;
+    padding: 0.3em 0.5em;
+    border: solid 1px #bbbbbb;
+    border-radius: 0.4em;
+    color: gray;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .layoutMode:hover, .layoutMode:focus {
+    color: #4994FB;
+    background: white;
+    outline: none;
+  }
 }
 
 .panels {
@@ -152,6 +170,50 @@ nav {
   .panel.active {
     z-index: 0;
   }
+}
+
+.panels.split-layout {
+  --blockly-panel-width: 50%;
+  display: grid;
+  grid-template-columns: minmax(0, var(--blockly-panel-width)) 8px minmax(0, 1fr);
+
+  .panel {
+    position: relative;
+    height: auto;
+    width: auto;
+    z-index: 0;
+  }
+
+  .blocklyEditor {
+    grid-column: 1;
+  }
+
+  #simPanel {
+    grid-column: 3;
+  }
+
+  .panel[aria-labelledby="navPython"] {
+    display: none;
+  }
+
+  .splitter {
+    grid-column: 2;
+    display: block;
+  }
+}
+
+.splitter {
+  display: none;
+  position: relative;
+  z-index: 2;
+  background: #D9E3F1;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.splitter:hover, .splitter:focus {
+  background: #4994FB;
+  outline: none;
 }
 
 .saveBlockly, .savePython {
