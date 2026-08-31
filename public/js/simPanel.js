@@ -1194,12 +1194,12 @@ var simPanel = new function() {
 
   // Stop the simulator
   this.stopSim = function(stopRobot) {
-    if (typeof stopRobot == 'undefined') {
-      let stopRobot = false;
-    }
+    stopRobot = stopRobot === true;
 
     skulpt.hardInterrupt = true;
     self.setRunIcon('run');
+    // Stopping a program must also clear every motor's last speed command.
+    robot.stopAll();
 
     if (typeof babylon.world.stopSim == 'function') {
       babylon.world.stopSim();
