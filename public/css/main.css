@@ -251,6 +251,12 @@ ul.menuDropDownRightAlign {
   top: 3em;
   right: 1em; }
 
+#simPanel {
+  isolation: isolate; }
+
+#simPanel > :not(#renderCanvas) {
+  z-index: 1; }
+
 #renderCanvas {
   width: 100%;
   height: 100%; }
