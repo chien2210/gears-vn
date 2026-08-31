@@ -55,7 +55,7 @@ var main = new function() {
     e.stopPropagation();
     menuDropDown(self.$layoutMode, [
       {html: 'Tabs', line: false, callback: function() { self.setLayoutMode('tabs'); }},
-      {html: 'Chia đôi', line: false, callback: function() { self.setLayoutMode('split'); }}
+      {html: 'Split', line: false, callback: function() { self.setLayoutMode('split'); }}
     ], {className: 'layoutModeDropDown', parentIsAbsolute: true, align: 'right'});
   };
 
@@ -67,7 +67,7 @@ var main = new function() {
     if (savePreference) {
       localStorage.setItem('gearsLayoutMode', mode);
     }
-    self.$layoutModeLabel.text(mode == 'split' ? 'Chia đôi' : 'Tabs');
+    self.$layoutModeLabel.text(mode == 'split' ? 'Split' : 'Tabs');
 
     if (mode == 'split') {
       self.activateSplitLayout();
