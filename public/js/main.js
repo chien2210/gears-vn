@@ -7,8 +7,7 @@ var main = new function() {
     self.$panelControls = $('.panelControlsArea .panelControls');
     self.$panels = $('.panels .panel');
     self.$panelsContainer = $('.panels');
-    self.$layoutMode = $('#layoutMode');
-    self.$layoutModeLabel = $('#layoutMode .layoutModeLabel');
+    self.$splitToggle = $('#splitToggle');
     self.$fileMenu = $('.fileMenu');
     self.$pythonMenu = $('.pythonMenu');
     self.$robotMenu = $('.robotMenu');
@@ -21,13 +20,7 @@ var main = new function() {
     self.updateTextLanguage();
 
     self.$navs.click(self.tabClicked);
-    self.$layoutMode.click(self.toggleLayoutMenu);
-    self.$layoutMode.keydown(function(e) {
-      if (e.key == 'Enter' || e.key == ' ') {
-        e.preventDefault();
-        self.toggleLayoutMenu(e);
-      }
-    });
+    self.$splitToggle.click(self.toggleSplitLayout);
     self.$fileMenu.click(self.toggleFileMenu);
     self.$pythonMenu.click(self.togglePythonMenu);
     self.$robotMenu.click(self.toggleRobotMenu);
@@ -47,16 +40,9 @@ var main = new function() {
     self.showWhatsNew();
   };
 
-  // Open the selector for the programming/simulator layout.
-  this.toggleLayoutMenu = function(e) {
-    if ($('.layoutModeDropDown').length > 0) {
-      return;
-    }
-    e.stopPropagation();
-    menuDropDown(self.$layoutMode, [
-      {html: 'Tabs', line: false, callback: function() { self.setLayoutMode('tabs'); }},
-      {html: 'Split', line: false, callback: function() { self.setLayoutMode('split'); }}
-    ], {className: 'layoutModeDropDown', parentIsAbsolute: true, align: 'right'});
+  // Split is an on/off view toggle; Tabs is its default, unpressed state.
+  this.toggleSplitLayout = function() {
+    self.setLayoutMode(self.layoutMode == 'split' ? 'tabs' : 'split');
   };
 
   this.setLayoutMode = function(mode, savePreference=true) {
@@ -67,7 +53,8 @@ var main = new function() {
     if (savePreference) {
       localStorage.setItem('gearsLayoutMode', mode);
     }
-    self.$layoutModeLabel.text(mode == 'split' ? 'Split' : 'Tabs');
+    self.$splitToggle.toggleClass('active', mode == 'split');
+    self.$splitToggle.attr('aria-pressed', mode == 'split' ? 'true' : 'false');
 
     if (mode == 'split') {
       self.activateSplitLayout();
