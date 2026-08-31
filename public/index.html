@@ -10,7 +10,7 @@
   <link rel="icon" href="favicon-167.png" sizes="167x167">
   <link rel="icon" href="favicon-192.png" sizes="192x192">
 
-  <link rel="stylesheet" href="css/main.css?v=split-layout-1">
+  <link rel="stylesheet" href="css/main.css?v=split-toggle-1">
   <link rel="stylesheet" href="css/widgets.css?v=7d85fcde">
 
   <script src="jquery/jquery-3.5.1.slim.min.js"></script>
@@ -54,9 +54,7 @@
         </li>
         <li id="navSim">Simulator</li>
       </ul>
-      <div id="layoutMode" class="layoutMode" role="button" tabindex="0" aria-haspopup="true" aria-label="Layout mode">
-        <span class="layoutModeLabel">Tabs</span> &#x25BE;
-      </div>
+      <button id="splitToggle" class="splitToggle" type="button" aria-pressed="false" aria-label="Toggle split view">Split</button>
       <div class="menuBar">
         <div class="menuItem fileMenu">File</div>
         <div class="menuItem pythonMenu">Python</div>
@@ -231,7 +229,7 @@
   <script src="js/pythonPanel.js?v=3e0c224d"></script>
   <script src="js/filesManager.js?v=c95715e3"></script>
   <script src="js/simPanel.js?v=159f4157"></script>
-  <script src="js/main.js?v=split-layout-1"></script>
+  <script src="js/main.js?v=split-toggle-1"></script>
 
   <script>
     // Init classes
