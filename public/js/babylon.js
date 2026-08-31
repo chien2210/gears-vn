@@ -28,6 +28,11 @@ var babylon = new function() {
       self.engine.resize();
     });
 
+    // The simulator starts visible as well when the split layout was selected.
+    if (typeof main != 'undefined' && main.layoutMode == 'split') {
+      simPanel.onActive();
+    }
+
   };
 
   // Create the scene
@@ -470,5 +475,4 @@ window.addEventListener("DOMContentLoaded", function() {
 // window.addEventListener("DOMContentLoaded", function() {
 //   Ammo().then(babylon.init);
 // });
-
 

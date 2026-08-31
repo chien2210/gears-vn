@@ -6,6 +6,9 @@ var main = new function() {
     self.$navs = $('nav li');
     self.$panelControls = $('.panelControlsArea .panelControls');
     self.$panels = $('.panels .panel');
+    self.$panelsContainer = $('.panels');
+    self.$layoutMode = $('#layoutMode');
+    self.$layoutModeLabel = $('#layoutMode .layoutModeLabel');
     self.$fileMenu = $('.fileMenu');
     self.$pythonMenu = $('.pythonMenu');
     self.$robotMenu = $('.robotMenu');
@@ -18,6 +21,13 @@ var main = new function() {
     self.updateTextLanguage();
 
     self.$navs.click(self.tabClicked);
+    self.$layoutMode.click(self.toggleLayoutMenu);
+    self.$layoutMode.keydown(function(e) {
+      if (e.key == 'Enter' || e.key == ' ') {
+        e.preventDefault();
+        self.toggleLayoutMenu(e);
+      }
+    });
     self.$fileMenu.click(self.toggleFileMenu);
     self.$pythonMenu.click(self.togglePythonMenu);
     self.$robotMenu.click(self.toggleRobotMenu);
@@ -29,10 +39,130 @@ var main = new function() {
     self.$projectName.change(self.saveProjectName);
 
     window.addEventListener('beforeunload', self.checkUnsaved);
+    self.initSplitter();
+    self.setLayoutMode(localStorage.getItem('gearsLayoutMode') || 'tabs', false);
     blocklyPanel.onActive();
     self.loadProjectName();
 
     self.showWhatsNew();
+  };
+
+  // Open the selector for the programming/simulator layout.
+  this.toggleLayoutMenu = function(e) {
+    if ($('.layoutModeDropDown').length > 0) {
+      return;
+    }
+    e.stopPropagation();
+    menuDropDown(self.$layoutMode, [
+      {html: 'Tabs', line: false, callback: function() { self.setLayoutMode('tabs'); }},
+      {html: 'Chia đôi', line: false, callback: function() { self.setLayoutMode('split'); }}
+    ], {className: 'layoutModeDropDown', parentIsAbsolute: true, align: 'right'});
+  };
+
+  this.setLayoutMode = function(mode, savePreference=true) {
+    if (mode != 'split') {
+      mode = 'tabs';
+    }
+    self.layoutMode = mode;
+    if (savePreference) {
+      localStorage.setItem('gearsLayoutMode', mode);
+    }
+    self.$layoutModeLabel.text(mode == 'split' ? 'Chia đôi' : 'Tabs');
+
+    if (mode == 'split') {
+      self.activateSplitLayout();
+    } else {
+      let wasSplit = self.$panelsContainer.hasClass('split-layout');
+      self.$panelsContainer.removeClass('split-layout');
+      if (wasSplit && typeof babylon != 'undefined' && babylon.engine) {
+        simPanel.onInActive();
+      }
+      self.tabClicked('navBlocks');
+    }
+  };
+
+  // Show Blocks and Simulator together without creating a second workspace or canvas.
+  this.activateSplitLayout = function() {
+    self.$panelsContainer.addClass('split-layout');
+    self.$navs.removeClass('active');
+    $('#navBlocks, #navSim').addClass('active');
+    self.$panels.removeClass('active');
+    $('.blocklyEditor, #simPanel').addClass('active');
+    self.$panelControls.removeClass('active');
+    self.$panelControls.filter('[aria-labelledby="navBlocks"]').addClass('active');
+
+    blocklyPanel.onActive();
+    if (typeof babylon != 'undefined' && babylon.engine) {
+      simPanel.onActive();
+    }
+    self.resizeSplitPanels();
+  };
+
+  this.resizeSplitPanels = function() {
+    requestAnimationFrame(function() {
+      if (typeof blockly != 'undefined' && blockly.displayedWorkspace) {
+        Blockly.svgResize(blockly.displayedWorkspace);
+      }
+      if (typeof babylon != 'undefined' && babylon.engine) {
+        babylon.engine.resize();
+      }
+    });
+  };
+
+  this.setSplitWidth = function(width, savePreference=true) {
+    width = Math.max(25, Math.min(75, width));
+    self.$panelsContainer[0].style.setProperty('--blockly-panel-width', width + '%');
+    if (savePreference) {
+      localStorage.setItem('gearsSplitWidth', width);
+    }
+    self.resizeSplitPanels();
+  };
+
+  this.initSplitter = function() {
+    let splitter = document.getElementById('splitter');
+    let savedWidth = parseFloat(localStorage.getItem('gearsSplitWidth'));
+    self.setSplitWidth(isNaN(savedWidth) ? 50 : savedWidth, false);
+
+    function changeWidth(clientX) {
+      let bounding = self.$panelsContainer[0].getBoundingClientRect();
+      self.setSplitWidth((clientX - bounding.left) / bounding.width * 100);
+    }
+
+    splitter.addEventListener('pointerdown', function(e) {
+      if (!self.$panelsContainer.hasClass('split-layout')) {
+        return;
+      }
+      splitter.setPointerCapture(e.pointerId);
+      splitter.addEventListener('pointermove', moveSplitter);
+      splitter.addEventListener('pointerup', stopDragging);
+      splitter.addEventListener('pointercancel', stopDragging);
+      function moveSplitter(event) {
+        changeWidth(event.clientX);
+      }
+      function stopDragging(event) {
+        splitter.releasePointerCapture(event.pointerId);
+        splitter.removeEventListener('pointermove', moveSplitter);
+        splitter.removeEventListener('pointerup', stopDragging);
+        splitter.removeEventListener('pointercancel', stopDragging);
+      }
+      e.preventDefault();
+    });
+
+    splitter.addEventListener('keydown', function(e) {
+      if (!self.$panelsContainer.hasClass('split-layout')) {
+        return;
+      }
+      let step = e.shiftKey ? 10 : 2;
+      let current = parseFloat(getComputedStyle(self.$panelsContainer[0]).getPropertyValue('--blockly-panel-width')) || 50;
+      if (e.key == 'ArrowLeft') {
+        self.setSplitWidth(current - step);
+      } else if (e.key == 'ArrowRight') {
+        self.setSplitWidth(current + step);
+      } else {
+        return;
+      }
+      e.preventDefault();
+    });
   };
 
   // Update text already in html
@@ -786,6 +916,17 @@ var main = new function() {
       var match = tabNav;
     } else {
       var match = $(this)[0].id;
+    }
+
+    if (self.layoutMode == 'split' && (match == 'navBlocks' || match == 'navSim')) {
+      self.activateSplitLayout();
+      return;
+    }
+    if (match == 'navPython' && self.$panelsContainer.hasClass('split-layout')) {
+      self.$panelsContainer.removeClass('split-layout');
+      if (typeof babylon != 'undefined' && babylon.engine) {
+        simPanel.onInActive();
+      }
     }
 
     function getPanelByNav(nav) {
