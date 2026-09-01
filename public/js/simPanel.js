@@ -3,6 +3,12 @@ var simPanel = new function() {
 
   this.sensors = [];
 
+  // UI execution state is kept separately from Skulpt's async interpreter state.
+  // This makes the Run/Stop control respond immediately and prevents stale
+  // Skulpt callbacks from changing the button after a newer Run/Stop action.
+  self.runState = false;
+  self.runGeneration = 0;
+
   self.rulerState = 0;
   self.pickedPoints = [null, null];
   self.touchDevice = false;
@@ -1196,6 +1202,10 @@ var simPanel = new function() {
   this.stopSim = function(stopRobot) {
     stopRobot = stopRobot === true;
 
+    // Invalidate the current execution before asking Skulpt to interrupt.
+    // Any completion callback from the old run is now stale.
+    self.runGeneration++;
+    self.runState = false;
     skulpt.hardInterrupt = true;
     self.setRunIcon('run');
     // Stopping a program must also clear every motor's last speed command.
@@ -1219,33 +1229,63 @@ var simPanel = new function() {
 
   // Run the simulator
   this.runSim = function() {
-    if (skulpt.running) {
+    // Do not use skulpt.running as the UI source of truth. Skulpt changes its
+    // state asynchronously, while the user expects Run to become Stop
+    // immediately after the click.
+    if (self.runState) {
       self.stopSim();
-    } else {
-      if (! filesManager.modified) {
+      return;
+    }
+
+    self.runState = true;
+    var generation = ++self.runGeneration;
+
+    // Change the UI FIRST. Everything below can throw synchronously (Blockly
+    // generation, editor/file updates, or Python startup), so the old code
+    // could leave the Run icon unchanged.
+    self.setRunIcon('stop');
+
+    try {
+      if (!filesManager.modified) {
         pythonPanel.loadPythonFromBlockly();
       }
       robot.reset();
-
-      // Set the UI state before starting Skulpt. Skulpt can finish or reject
-      // asynchronously (and very quickly), so setting the icon afterwards
-      // can make the STOP state invisible to the user.
-      self.setRunIcon('stop');
-
       skulpt.runPython(filesManager.files['main.py']);
       if (typeof babylon.world.startSim == 'function') {
         babylon.world.startSim();
       }
+    } catch (err) {
+      // Restore the UI when startup fails synchronously.
+      if (generation === self.runGeneration) {
+        self.runState = false;
+        self.setRunIcon('run');
+      }
+      console.error('Failed to start simulation:', err);
     }
   };
 
   // Set run icon
   this.setRunIcon = function(type) {
+    if (!self.$runSim || !self.$runSim.length) {
+      return;
+    }
     if (type == 'run') {
+      self.$runSim.attr('aria-label', 'Run');
+      self.$runSim.attr('title', 'Run');
+      self.$runSim.removeClass('is-running');
       self.$runSim.html('<span class="icon-play"></span>');
     } else {
+      self.$runSim.attr('aria-label', 'Stop');
+      self.$runSim.attr('title', 'Stop');
+      self.$runSim.addClass('is-running');
       self.$runSim.html('<span class="icon-stop"></span>');
     }
+  };
+
+  // Called by Skulpt only when the current interpreter really finishes.
+  this.onPythonFinished = function() {
+    self.runState = false;
+    self.setRunIcon('run');
   };
 
   // Reset simulator
