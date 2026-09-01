@@ -295,9 +295,9 @@ var blockly = new function() {
   this.loadDefaultWorkspace = function() {
     let xmlText =
       '<xml xmlns="https://developers.google.com/blockly/xml">' +
-        '<block type="when_started" id="Q!^ZqS4/(a/0XL$cIi-~" x="63" y="38" deletable="false"><data>Main</data></block>' +
+        '<block type="when_started" id="Q!^ZqS4/(a/0XL$cIi-~" x="24" y="24" deletable="false"><data>Main</data></block>' +
       '</xml>';
-    self.loadXmlText(xmlText);
+    self.loadXmlText(xmlText, true);
   };
 
   // Load custom blocks
@@ -334,7 +334,7 @@ var blockly = new function() {
   };
 
   // load xmlText to workspace
-  this.loadXmlText = function(xmlText) {
+  this.loadXmlText = function(xmlText, alignToTopLeft=false) {
     let oldXmlText = self.getXmlText();
     if (xmlText) {
       let dom;
@@ -377,7 +377,7 @@ var blockly = new function() {
       }
 
       self.assignOrphenToPage('Main');
-      self.showPage('Main');
+      self.showPage('Main', alignToTopLeft);
 
       let pages = [];
       self.workspace.getAllBlocks().forEach(function(block){
@@ -432,7 +432,19 @@ var blockly = new function() {
 
   // Load from local storage
   this.loadLocalStorage = function() {
-    self.loadXmlText(localStorage.getItem('blocklyXML'));
+    let xmlText = localStorage.getItem('blocklyXML');
+    if (!xmlText) {
+      return;
+    }
+    let isNewProgram = false;
+    try {
+      let dom = Blockly.utils.xml.textToDom(xmlText);
+      let blocks = dom.querySelectorAll('block');
+      isNewProgram = blocks.length == 1 && blocks[0].getAttribute('type') == 'when_started';
+    } catch (err) {
+      // Let loadXmlText report an invalid saved workspace as before.
+    }
+    self.loadXmlText(xmlText, isNewProgram);
   };
 
   // Clear all blocks from displayed workspace
@@ -458,7 +470,7 @@ var blockly = new function() {
   };
 
   // Copy blocks of specified page into displayed workspace
-  this.showPage = function(page) {
+  this.showPage = function(page, alignToTopLeft=false) {
     self.mirror = false;
     self.displayedWorkspace.clear();
 
@@ -490,7 +502,11 @@ var blockly = new function() {
         displayedBlock.svgGroup_.style.display = 'none';
       }
     });
-    self.displayedWorkspace.scrollCenter();
+    if (alignToTopLeft) {
+      self.displayedWorkspace.scroll(0, 0);
+    } else {
+      self.displayedWorkspace.scrollCenter();
+    }
     setTimeout(function() {
       self.mirror = true;
     }, 200);
@@ -550,4 +566,3 @@ var blockly = new function() {
     moveBlock(self.workspace.getBlockById(selected.id), to);
   };
 }
-
