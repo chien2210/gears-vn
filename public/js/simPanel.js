@@ -50,7 +50,7 @@ var simPanel = new function() {
     self.$consoleBtn.click(self.toggleConsole);
     self.$console.on('transitionend', self.scrollConsoleToBottom);
     self.$consoleClear.click(self.clearConsole);
-    self.$runSim.click(self.runSim);
+    self.$runSim.off('click.gearsRunStop').on('click.gearsRunStop', function(e) { e.preventDefault(); e.stopPropagation(); self.runSim(e); });
     self.$world.click(self.selectWorld);
     self.$reset.click(function() {
       if (babylon.cameraMode == 'follow') {
@@ -1266,20 +1266,15 @@ var simPanel = new function() {
 
   // Set run icon
   this.setRunIcon = function(type) {
-    if (!self.$runSim || !self.$runSim.length) {
-      return;
-    }
-    if (type == 'run') {
-      self.$runSim.attr('aria-label', 'Run');
-      self.$runSim.attr('title', 'Run');
-      self.$runSim.removeClass('is-running');
-      self.$runSim.html('<span class="icon-play"></span>');
-    } else {
-      self.$runSim.attr('aria-label', 'Stop');
-      self.$runSim.attr('title', 'Stop');
-      self.$runSim.addClass('is-running');
-      self.$runSim.html('<span class="icon-stop"></span>');
-    }
+    if (!self.$runSim || !self.$runSim.length) return;
+    var running = type != 'run';
+    self.$runSim.toggleClass('is-running', running);
+    self.$runSim.attr('data-run-state', running ? 'stop' : 'run');
+    self.$runSim.attr('aria-label', running ? 'Stop' : 'Run');
+    self.$runSim.attr('title', running ? 'Stop' : 'Run');
+    // Keep both glyphs in the DOM; CSS controls visibility. This avoids
+    // replacing the clicked node while a pointer/click event is in flight.
+    self.$runSim.html('<span class="icon-play run-icon"></span><span class="icon-stop stop-icon"></span>');
   };
 
   // Called by Skulpt only when the current interpreter really finishes.
