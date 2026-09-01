@@ -19,6 +19,9 @@ var skulpt = new function() {
     './ev3dev2/Training_Wheels.py': 'ev3dev2/Training_Wheels.py?v=ad06cf56',
   };
   this.preloadedLibs = {};
+  // Monotonically increasing execution id prevents an older Skulpt promise
+  // from changing the UI state after a newer execution has started.
+  this.executionId = 0;
 
   // Run on page load
   this.init = function() {
@@ -41,6 +44,7 @@ var skulpt = new function() {
       return;
     }
     self.running = true;
+    var executionId = ++self.executionId;
 
     var myPromise = Sk.misceval.asyncToPromise(
       function() {
@@ -55,7 +59,9 @@ var skulpt = new function() {
       function(mod) {
         self.running = false;
         clearInterval(resetExecStart);
-        simPanel.setRunIcon('run');
+        if (executionId === self.executionId) {
+          simPanel.setRunIcon('run');
+        }
       },
       function(err) {
         self.running = false;
@@ -65,7 +71,9 @@ var skulpt = new function() {
           simPanel.consoleWriteErrors(err.toString());
         }
         clearInterval(resetExecStart);
-        simPanel.setRunIcon('run');
+        if (executionId === self.executionId) {
+          simPanel.setRunIcon('run');
+        }
       }
     );
   };

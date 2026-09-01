@@ -1226,8 +1226,13 @@ var simPanel = new function() {
         pythonPanel.loadPythonFromBlockly();
       }
       robot.reset();
-      skulpt.runPython(filesManager.files['main.py']);
+
+      // Set the UI state before starting Skulpt. Skulpt can finish or reject
+      // asynchronously (and very quickly), so setting the icon afterwards
+      // can make the STOP state invisible to the user.
       self.setRunIcon('stop');
+
+      skulpt.runPython(filesManager.files['main.py']);
       if (typeof babylon.world.startSim == 'function') {
         babylon.world.startSim();
       }
