@@ -3,12 +3,6 @@ var simPanel = new function() {
 
   this.sensors = [];
 
-  // UI execution state is kept separately from Skulpt's async interpreter state.
-  // This makes the Run/Stop control respond immediately and prevents stale
-  // Skulpt callbacks from changing the button after a newer Run/Stop action.
-  self.runState = false;
-  self.runGeneration = 0;
-
   self.rulerState = 0;
   self.pickedPoints = [null, null];
   self.touchDevice = false;
@@ -50,7 +44,7 @@ var simPanel = new function() {
     self.$consoleBtn.click(self.toggleConsole);
     self.$console.on('transitionend', self.scrollConsoleToBottom);
     self.$consoleClear.click(self.clearConsole);
-    self.$runSim.off('click.gearsRunStop').on('click.gearsRunStop', function(e) { e.preventDefault(); e.stopPropagation(); self.runSim(e); });
+    self.$runSim.click(self.runSim);
     self.$world.click(self.selectWorld);
     self.$reset.click(function() {
       if (babylon.cameraMode == 'follow') {
@@ -1202,10 +1196,6 @@ var simPanel = new function() {
   this.stopSim = function(stopRobot) {
     stopRobot = stopRobot === true;
 
-    // Invalidate the current execution before asking Skulpt to interrupt.
-    // Any completion callback from the old run is now stale.
-    self.runGeneration++;
-    self.runState = false;
     skulpt.hardInterrupt = true;
     self.setRunIcon('run');
     // Stopping a program must also clear every motor's last speed command.
@@ -1229,58 +1219,28 @@ var simPanel = new function() {
 
   // Run the simulator
   this.runSim = function() {
-    // Do not use skulpt.running as the UI source of truth. Skulpt changes its
-    // state asynchronously, while the user expects Run to become Stop
-    // immediately after the click.
-    if (self.runState) {
+    if (skulpt.running) {
       self.stopSim();
-      return;
-    }
-
-    self.runState = true;
-    var generation = ++self.runGeneration;
-
-    // Change the UI FIRST. Everything below can throw synchronously (Blockly
-    // generation, editor/file updates, or Python startup), so the old code
-    // could leave the Run icon unchanged.
-    self.setRunIcon('stop');
-
-    try {
-      if (!filesManager.modified) {
+    } else {
+      if (! filesManager.modified) {
         pythonPanel.loadPythonFromBlockly();
       }
       robot.reset();
       skulpt.runPython(filesManager.files['main.py']);
+      self.setRunIcon('stop');
       if (typeof babylon.world.startSim == 'function') {
         babylon.world.startSim();
       }
-    } catch (err) {
-      // Restore the UI when startup fails synchronously.
-      if (generation === self.runGeneration) {
-        self.runState = false;
-        self.setRunIcon('run');
-      }
-      console.error('Failed to start simulation:', err);
     }
   };
 
   // Set run icon
   this.setRunIcon = function(type) {
-    if (!self.$runSim || !self.$runSim.length) return;
-    var running = type != 'run';
-    self.$runSim.toggleClass('is-running', running);
-    self.$runSim.attr('data-run-state', running ? 'stop' : 'run');
-    self.$runSim.attr('aria-label', running ? 'Stop' : 'Run');
-    self.$runSim.attr('title', running ? 'Stop' : 'Run');
-    // Keep both glyphs in the DOM; CSS controls visibility. This avoids
-    // replacing the clicked node while a pointer/click event is in flight.
-    self.$runSim.html('<span class="icon-play run-icon"></span><span class="icon-stop stop-icon"></span>');
-  };
-
-  // Called by Skulpt only when the current interpreter really finishes.
-  this.onPythonFinished = function() {
-    self.runState = false;
-    self.setRunIcon('run');
+    if (type == 'run') {
+      self.$runSim.html('<span class="icon-play"></span>');
+    } else {
+      self.$runSim.html('<span class="icon-stop"></span>');
+    }
   };
 
   // Reset simulator

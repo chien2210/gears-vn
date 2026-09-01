@@ -55,11 +55,7 @@ var skulpt = new function() {
       function(mod) {
         self.running = false;
         clearInterval(resetExecStart);
-        if (typeof simPanel.onPythonFinished == 'function') {
-          simPanel.onPythonFinished();
-        } else {
-          simPanel.setRunIcon('run');
-        }
+        simPanel.setRunIcon('run');
       },
       function(err) {
         self.running = false;
@@ -69,11 +65,7 @@ var skulpt = new function() {
           simPanel.consoleWriteErrors(err.toString());
         }
         clearInterval(resetExecStart);
-        if (typeof simPanel.onPythonFinished == 'function') {
-          simPanel.onPythonFinished();
-        } else {
-          simPanel.setRunIcon('run');
-        }
+        simPanel.setRunIcon('run');
       }
     );
   };
